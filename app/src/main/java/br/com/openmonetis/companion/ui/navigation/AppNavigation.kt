@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.openmonetis.companion.ui.screens.history.HistoryScreen
 import br.com.openmonetis.companion.ui.screens.home.HomeScreen
+import br.com.openmonetis.companion.ui.screens.invoice.InvoiceScannerScreen
 import br.com.openmonetis.companion.ui.screens.logs.LogsScreen
 import br.com.openmonetis.companion.ui.screens.settings.SettingsScreen
 import br.com.openmonetis.companion.ui.screens.settings.keywords.KeywordsSettingsScreen
@@ -19,6 +20,7 @@ sealed class Screen(val route: String) {
     data object Setup : Screen("setup")
     data object Home : Screen("home")
     data object History : Screen("history")
+    data object InvoiceScanner : Screen("invoice_scanner")
     data object Settings : Screen("settings")
     data object KeywordsSettings : Screen("keywords_settings")
     data object Logs : Screen("logs")
@@ -56,6 +58,17 @@ fun AppNavigation() {
                 },
                 onNavigateToLogs = {
                     navController.navigate(Screen.Logs.route)
+                },
+                onNavigateToInvoiceScanner = {
+                    navController.navigate(Screen.InvoiceScanner.route)
+                }
+            )
+        }
+
+        composable(Screen.InvoiceScanner.route) {
+            InvoiceScannerScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

@@ -33,6 +33,9 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): NotificationEntity?
 
+    @Query("SELECT EXISTS(SELECT 1 FROM notifications WHERE original_text = :originalText LIMIT 1)")
+    suspend fun existsByOriginalText(originalText: String): Boolean
+
     @Query("SELECT * FROM notifications WHERE sync_status = :status ORDER BY created_at ASC")
     suspend fun getByStatus(status: SyncStatus): List<NotificationEntity>
 

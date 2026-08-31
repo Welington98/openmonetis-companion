@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Camera feature (optional - for QR code scanning) -->
+    <!-- Camera feature (optional - used by the NFC-e QR code scanner; app remains functional without it) -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
