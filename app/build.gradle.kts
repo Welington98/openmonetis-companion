@@ -14,8 +14,8 @@ android {
         applicationId = "br.com.openmonetis.companion"
         minSdk = 31 // Android 12
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.5.3"
+        versionCode = 11
+        versionName = "1.5.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
