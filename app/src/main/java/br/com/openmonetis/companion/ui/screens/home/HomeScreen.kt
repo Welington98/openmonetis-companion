@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
@@ -45,6 +46,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -84,6 +86,7 @@ fun HomeScreen(
     onNavigateToKeywords: () -> Unit = {},
     onNavigateToLogs: () -> Unit = {},
     onNavigateToInvoiceScanner: () -> Unit = {},
+    onNavigateToManualEntry: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -168,8 +171,16 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToInvoiceScanner) {
-                Icon(Icons.Default.QrCodeScanner, contentDescription = "Ler nota fiscal")
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SmallFloatingActionButton(onClick = onNavigateToManualEntry) {
+                    Icon(Icons.Default.Add, contentDescription = "Novo lançamento manual")
+                }
+                FloatingActionButton(onClick = onNavigateToInvoiceScanner) {
+                    Icon(Icons.Default.QrCodeScanner, contentDescription = "Ler nota fiscal")
+                }
             }
         }
     ) { paddingValues ->
