@@ -27,6 +27,17 @@
     <string name="history_filter_pending">Pendentes</string>
     <string name="history_filter_sent">Enviados</string>
 
+    <!-- Manual Entry -->
+    <string name="manual_entry_title">Novo lançamento</string>
+    <string name="manual_entry_amount_label">Valor</string>
+    <string name="manual_entry_amount_placeholder">0,00</string>
+    <string name="manual_entry_description_label">Descrição</string>
+    <string name="manual_entry_description_placeholder">Ex: Supermercado, Uber, Farmácia</string>
+    <string name="manual_entry_date_label">Data</string>
+    <string name="manual_entry_amount_error">Informe um valor válido</string>
+    <string name="manual_entry_description_error">Informe uma descrição</string>
+    <string name="manual_entry_saved">Lançamento salvo</string>
+
     <!-- Settings -->
     <string name="settings_title">Configurações</string>
     <string name="settings_server">Servidor</string>
