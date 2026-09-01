@@ -5,6 +5,12 @@ Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.5.3] - 2026-09-01
+
+### Adicionado
+
+- Leitura de nota fiscal via QR Code (NFC-e): tela de câmera com CameraX + ML Kit para escanear o QR Code, validar a chave de acesso e reaproveitar o pipeline de Inbox existente
+
 ## [1.5.2] - 2026-05-30
 
 ### Adicionado
