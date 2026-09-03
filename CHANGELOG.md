@@ -5,6 +5,16 @@ Todas as mudanças notáveis deste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Adicionado
+
+- Leitura de nota fiscal (NFC-e) agora busca a página do QR Code e tenta preencher automaticamente o valor e o estabelecimento, exibindo uma tela de conferência para o usuário confirmar ou corrigir antes de salvar (a extração é heurística e varia conforme o portal da Sefaz de cada estado)
+
+### Corrigido
+
+- Notificações capturadas duplicadas: o serviço de captura agora ignora notificações com o mesmo texto já salvo anteriormente, evitando repetições quando o Android reenvia o mesmo alerta (ex.: Carteira do Google)
+
 ## [1.5.4] - 2026-09-01
 
 ### Adicionado

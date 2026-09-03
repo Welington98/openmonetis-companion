@@ -13,7 +13,17 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+/**
+ * Marks the plain HTTP client used to fetch third-party pages (e.g. the Sefaz
+ * NFC-e portals). It must never carry the OpenMonetis auth token or the
+ * dynamic base-URL rewrite meant for the user's own backend.
+ */
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ExternalHttpClient
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -57,6 +67,17 @@ object NetworkModule {
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @ExternalHttpClient
+    fun provideExternalHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
             .build()
     }
 

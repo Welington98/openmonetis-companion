@@ -80,6 +80,13 @@ class CaptureNotificationListenerService : NotificationListenerService() {
                     return@launch
                 }
 
+                // Avoid duplicate entries when Android redelivers/updates the same
+                // notification (e.g. Google Wallet reposts the same alert multiple times)
+                if (notificationDao.existsByOriginalText(text)) {
+                    Log.d(TAG, "Duplicate notification ignored: $text")
+                    return@launch
+                }
+
                 // Parse notification
                 val parsed = notificationParser.parse(packageName, title, text)
 
