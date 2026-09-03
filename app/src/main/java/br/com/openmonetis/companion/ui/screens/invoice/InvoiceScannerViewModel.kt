@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.openmonetis.companion.data.local.dao.NotificationDao
 import br.com.openmonetis.companion.data.local.entities.NotificationEntity
+import br.com.openmonetis.companion.domain.parser.NfceInvoiceFetcher
 import br.com.openmonetis.companion.domain.parser.NfceQrParser
 import br.com.openmonetis.companion.domain.parser.NfceQrResult
 import br.com.openmonetis.companion.service.SyncWorker
@@ -17,19 +18,31 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Locale
 import javax.inject.Inject
+
+@Immutable
+data class PendingInvoice(
+    val accessKey: String,
+    val rawContent: String,
+    val isFetchingDetails: Boolean,
+    val merchantName: String,
+    val amountText: String
+)
 
 @Immutable
 data class InvoiceScannerUiState(
     val feedbackMessage: String? = null,
-    val scanResult: NfceQrResult? = null
+    val scanResult: NfceQrResult? = null,
+    val pendingInvoice: PendingInvoice? = null
 )
 
 @HiltViewModel
 class InvoiceScannerViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val notificationDao: NotificationDao,
-    private val nfceQrParser: NfceQrParser
+    private val nfceQrParser: NfceQrParser,
+    private val nfceInvoiceFetcher: NfceInvoiceFetcher
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(InvoiceScannerUiState())
@@ -38,7 +51,7 @@ class InvoiceScannerViewModel @Inject constructor(
     private var isHandling = false
 
     fun onQrCodeDetected(rawValue: String) {
-        if (isHandling) return
+        if (isHandling || _uiState.value.pendingInvoice != null) return
         isHandling = true
 
         viewModelScope.launch {
@@ -53,22 +66,78 @@ class InvoiceScannerViewModel @Inject constructor(
                 return@launch
             }
 
+            _uiState.update {
+                it.copy(
+                    pendingInvoice = PendingInvoice(
+                        accessKey = parsed.accessKey,
+                        rawContent = parsed.rawContent,
+                        isFetchingDetails = true,
+                        merchantName = "",
+                        amountText = ""
+                    )
+                )
+            }
+
+            // Best-effort: each state's Sefaz portal has its own page layout,
+            // so this may come back empty and the user fills it in by hand.
+            val details = nfceInvoiceFetcher.fetch(parsed.rawContent)
+
+            _uiState.update { state ->
+                state.copy(
+                    pendingInvoice = state.pendingInvoice?.copy(
+                        isFetchingDetails = false,
+                        merchantName = details?.merchantName.orEmpty(),
+                        amountText = details?.amount?.let(::formatAmount).orEmpty()
+                    )
+                )
+            }
+        }
+    }
+
+    fun updatePendingMerchantName(value: String) {
+        _uiState.update { it.copy(pendingInvoice = it.pendingInvoice?.copy(merchantName = value)) }
+    }
+
+    fun updatePendingAmount(value: String) {
+        _uiState.update { it.copy(pendingInvoice = it.pendingInvoice?.copy(amountText = value)) }
+    }
+
+    fun cancelPendingInvoice() {
+        _uiState.update { it.copy(pendingInvoice = null) }
+        isHandling = false
+    }
+
+    fun confirmPendingInvoice() {
+        val pending = _uiState.value.pendingInvoice ?: return
+        if (pending.isFetchingDetails) return
+
+        viewModelScope.launch {
+            val amount = pending.amountText.trim().replace(",", ".").toDoubleOrNull()
+            val merchantName = pending.merchantName.trim().ifBlank {
+                "NFC-e ${nfceQrParser.formatAccessKey(pending.accessKey)}"
+            }
+
             notificationDao.insert(
                 NotificationEntity(
                     sourceApp = NfceQrParser.NFCE_SOURCE_APP,
                     sourceAppName = "Leitor de Nota Fiscal",
                     originalTitle = "NFC-e escaneada",
-                    originalText = parsed.rawContent,
+                    originalText = pending.rawContent,
                     notificationTimestamp = System.currentTimeMillis(),
-                    parsedName = "NFC-e ${nfceQrParser.formatAccessKey(parsed.accessKey)}",
-                    parsedAmount = null,
+                    parsedName = merchantName,
+                    parsedAmount = amount,
                     parsedDate = null,
                     parsedCardLastDigits = null
                 )
             )
             SyncWorker.enqueue(context)
 
-            _uiState.update { it.copy(scanResult = parsed) }
+            _uiState.update {
+                it.copy(
+                    pendingInvoice = null,
+                    scanResult = NfceQrResult(pending.accessKey, pending.rawContent)
+                )
+            }
         }
     }
 
@@ -78,4 +147,7 @@ class InvoiceScannerViewModel @Inject constructor(
         _uiState.update { it.copy(feedbackMessage = null) }
         isHandling = false
     }
+
+    private fun formatAmount(amount: Double): String =
+        String.format(Locale("pt", "BR"), "%.2f", amount).replace(".", ",")
 }
